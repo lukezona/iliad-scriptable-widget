@@ -28,30 +28,41 @@ const showRenew = false
 
 // Styles
 const red = new Color('#c12026')
+const darkred = new Color('#ae0000')
 const dark = new Color('#212121')
+const black = new Color('#000000')
 const white = new Color('#ffffff')
 
 let bgColor = red
 let textColor = white
 let logo = white
 
+let progressBg = darkred
+let progressFill = white
+
 switch (theme) {
   case 'light': {
     bgColor = white
     textColor = red
     logo = red
+    progressBg = dark
+    progressFill = red
     break;
   }
   case 'dark': {
     bgColor = dark
     textColor = white
     logo = white
+    progressBg = black
+    progressFill = red
     break;
   }
   default: {
     bgColor = red
     textColor = white
     logo = white
+    progressBg = darkred
+    progressFill = red
     break;
   }
 }
@@ -93,62 +104,63 @@ const createWidget = async () => {
 
 	if (result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)) {
   
-      const number = result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)[0];
-      const dateRenew = result.match(/[0-9]{2}\/[0-9]{2}\/[0-9]{4}/)[0];
-      const calls = result.match(/Chiamate: [0-9]*[a-z]*.+s/)[0];
-      const messages = result.match(/[0-9]{1,4} SMS/)[0];
-      const gb_italy = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]+GB/)[0]
-      const gb_eu = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]GB/)[0]
-      
-      const header = list.addText('iliad')
-      header.font = new Font('MuseoModerno', 22)
-      header.textColor = logo
-      
-      if (showNumber || showLabel) {
-        
-        if (showLabel) {
-          const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
-          value_number.font = Font.boldSystemFont(10)
-          value_number.textColor = textColor
-        } else {
-          const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
-          value_number.font = Font.boldSystemFont(10)
-          value_number.textColor = textColor
-        }
-      
-      }
+	      const number = result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)[0];
+	      const dateRenew = result.match(/[0-9]{2}\/[0-9]{2}\/[0-9]{4}/)[0];
+	      const calls = result.match(/Chiamate: [0-9]*[a-z]*.+s/)[0];
+	      const messages = result.match(/[0-9]{1,4} SMS/)[0];
+	      const gb_italy = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]+GB/)[0]
+	      const gb_eu = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]GB/)[0]
 
-      list.addSpacer()
-      
-      const consumati = parseFloat(gb_italy.split(' / ')[0])
-      const totali = parseFloat(gb_italy.split(' / ')[1])
-      
-      const progressBar = list.addImage(createProgressBar(totali, consumati, 20));
-      progressBar.imageSize = new Size(width, 20);
+	      const header = list.addText('iliad')
+	      header.font = new Font('MuseoModerno', 22)
+	      header.textColor = logo
 
-      const value_gb_italy = list.addText('🇮🇹  ' + gb_italy.replace(/,[0-9]*/,''))
-		  value_gb_italy.font = Font.boldSystemFont(12)
-      value_gb_italy.textColor = textColor
+	      if (showNumber || showLabel) {
 
-      list.addSpacer(3)
-      
-      const consumatiEU = parseFloat(gb_eu.split(' / ')[0])
-      const totaliEU = parseFloat(gb_eu.split(' / ')[1])
+		if (showLabel) {
+		  const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
+		  value_number.font = Font.boldSystemFont(10)
+		  value_number.textColor = textColor
+		} else {
+		  const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
+		  value_number.font = Font.boldSystemFont(10)
+		  value_number.textColor = textColor
+		}
 
-      const progressBarEU = list.addImage(createProgressBar(totali, consumati, 20));
-      progressBarEU.imageSize = new Size(width, 20);
-      
-      const value_gb_eu = list.addText('🇪🇺  ' + gb_eu.replace(/,[0-9]*/,''))
-		  value_gb_eu.font = Font.boldSystemFont(12)
-      value_gb_eu.textColor = textColor
-      list.addSpacer()
-      
-      if (showRenew) {
-        const label_renew = list.addText('Rinnovo: ' + dateRenew)
-        label_renew.font = Font.boldSystemFont(11)
-        label_renew.font = Font.italicSystemFont(11)
-        label_renew.textColor = textColor
-      }
+	      }
+
+	      list.addSpacer()
+
+	      const consumati = parseFloat(gb_italy.split(' / ')[0])
+	      const totali = parseFloat(gb_italy.split(' / ')[1])
+
+	      const value_gb_italy = list.addText('Italia:  ' + gb_italy.replace(/,[0-9]*/,''))
+	      value_gb_italy.font = Font.boldSystemFont(12)
+	      value_gb_italy.textColor = textColor
+
+	      const progressBar = list.addImage(createProgressBar(totali, consumati, 5));
+	      progressBar.imageSize = new Size(width, 20);
+
+	      list.addSpacer(3)
+
+	      const consumatiEU = parseFloat(gb_eu.split(' / ')[0])
+	      const totaliEU = parseFloat(gb_eu.split(' / ')[1])
+
+	      const value_gb_eu = list.addText('Europa:  ' + gb_eu.replace(/,[0-9]*/,''))
+	      value_gb_eu.font = Font.boldSystemFont(12)
+	      value_gb_eu.textColor = textColor
+
+	      const progressBarEU = list.addImage(createProgressBar(totali, consumati, 5));
+	      progressBarEU.imageSize = new Size(width, 20);
+
+	      list.addSpacer()
+
+	      if (showRenew) {
+		const label_renew = list.addText('Rinnovo: ' + dateRenew)
+		label_renew.font = Font.boldSystemFont(11)
+		label_renew.font = Font.italicSystemFont(11)
+		label_renew.textColor = textColor
+	      }
 
 	} else {
 		list.addText('Data not available')
@@ -160,13 +172,13 @@ const createWidget = async () => {
 const getIliadData = async () => {
 
 	const r = new Request(ILIAD_URL)
-  r.addParameterToMultipart('login-ident',USERNAME)
-  r.addParameterToMultipart('login-pwd',PASSWORD)
+	r.addParameterToMultipart('login-ident',USERNAME)
+	r.addParameterToMultipart('login-pwd',PASSWORD)
 	r.method = 'post'
 
 	try {
 		let result = await r.loadString()
-    result = result.replace(/(<([^>]+)>)/gi, "");
+    		result = result.replace(/(<([^>]+)>)/gi, "");
 		return String(result)
 	} catch (err) {
 		return undefined
