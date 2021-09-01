@@ -72,7 +72,7 @@ switch (theme) {
         textColor = white
         logo = white
         progressBg = darkred
-        progressFill = red
+        progressFill = white
         break;
     }
 }
@@ -103,6 +103,8 @@ const createWidget = async () => {
 
         const consumatiEU = parseUsage(gb_eu.split(' / ')[0])
         const totaliEU = parseUsage(gb_eu.split(' / ')[1])
+	
+	const minutes = parseMinutes(calls)
 
         const header = list.addText('iliad')
         header.font = new Font('MuseoModerno', 22)
@@ -120,62 +122,66 @@ const createWidget = async () => {
                 value_number.textColor = textColor
             }
 
+            list.addSpacer(20)
+
+        } else {
+            list.addSpacer(20)
         }
-        
-        list.addSpacer(10)
-        
-	if (showMessages) {
-		const value_messages = list.addText('Messaggi: ' + messages + ' su Illimitati')
-		value_messages.font = Font.boldSystemFont(12)
 
-		const progressBarMessages = list.addImage(createProgressBar(100, 0, 5));
-		progressBarMessages.imageSize = new Size(width, 20);
+        if (showMessages) {
+            const value_messages = list.addText('Messaggi: ' + messages + ' su Illimitati')
+            value_messages.font = Font.boldSystemFont(12)
 
-		list.addSpacer(5)
-	}
+            const progressBarMessages = list.addImage(createProgressBar(100, 0, 5));
+            progressBarMessages.imageSize = new Size(width, 20);
 
-	const rowGB = list.addStack()
-	addSymbol({
-		symbol: 'arrow.up.arrow.down.circle',
-		stack: rowGB,
-		color: textColor,
-		size: 20
-	})
-	rowGB.addSpacer(10)
+            list.addSpacer(5)
+        }
+
+        const rowGB = list.addStack()
+        addSymbol({
+            symbol: 'arrow.up.arrow.down.circle',
+            stack: rowGB,
+            color: textColor,
+            size: 16
+        })
+        rowGB.addSpacer()
         const value_gb_italy = rowGB.addText(consumati + ' su ' + totali + ' GB')
-        value_gb_italy.font = Font.boldSystemFont(24)
+        value_gb_italy.font = Font.boldSystemFont(16)
         value_gb_italy.textColor = textColor
 
         const progressBar = list.addImage(createProgressBar(totali, consumati, 5));
-        progressBar.imageSize = new Size(width, 20);
+        progressBar.imageSize = new Size(width, 18);
 
         if (consumatiEU > 0) {
-	
-            list.addSpacer(5)
 
-            const value_gb_eu = list.addText('Europa:  ' + consumatiEU + ' su ' + totaliEU + ' GB')
-            value_gb_eu.font = Font.boldSystemFont(12)
+            list.addSpacer(5)
+	    
+	    const rowEU = list.addStack()
+	    const label_gb_eu = rowEU.addText('Europa: ')
+            label_gb_eu.font = Font.boldSystemFont(10)
+            label_gb_eu.textColor = textColor
+	    rowEU.addSpacer()
+            const value_gb_eu = rowEU.addText(consumatiEU + ' su ' + totaliEU + ' GB')
+            value_gb_eu.font = Font.boldSystemFont(10)
             value_gb_eu.textColor = textColor
 
-            const progressBarEU = list.addImage(createProgressBar(totali, consumati, 5));
-            progressBarEU.imageSize = new Size(width, 20);
-	    
+            const progressBarEU = list.addImage(createProgressBar(totaliEU, consumatiEU, 5));
+            progressBarEU.imageSize = new Size(width, 15);
+
         } else {
 
-		list.addSpacer(5)
-		
-		const rowCalls = list.addStack()
-		addSymbol({
-			symbol: 'phone.circle',
-			stack: rowCalls,
-			color: textColor,
-			size: 15
-		})
-		const value_calls = rowCalls.addText(parseMinutes(calls) + ' minuti')
-		value_calls.font = Font.boldSystemFont(12)
+            list.addSpacer(5)
 
-		const progressBarCalls = list.addImage(createProgressBar(100, 0, 5));
-		progressBarCalls.imageSize = new Size(width, 20);
+            const rowCalls = list.addStack()
+            const label_calls = rowCalls.addText('Minuti: ')
+            label_calls.font = Font.boldSystemFont(10)
+	    rowCalls.addSpacer()
+            const value_calls = rowCalls.addText(parseMinutes(calls) + ' su ∞')
+            value_calls.font = Font.boldSystemFont(10)
+
+            const progressBarCalls = list.addImage(createProgressBar(100, minutes, 5));
+            progressBarCalls.imageSize = new Size(width, 15);
 
         }
 
@@ -221,15 +227,15 @@ Script.complete()
 // 
 
 function addSymbol({
-  symbol = 'applelogo',
-  stack,
-  color = Color.white(),
-  size = 20,
+    symbol = 'applelogo',
+    stack,
+    color = Color.white(),
+    size = 20,
 }) {
-  const _sym = SFSymbol.named(symbol)
-  const wImg = stack.addImage(_sym.image)
-  wImg.tintColor = color
-  wImg.imageSize = new Size(size, size)
+    const _sym = SFSymbol.named(symbol)
+    const wImg = stack.addImage(_sym.image)
+    wImg.tintColor = color
+    wImg.imageSize = new Size(size, size)
 }
 
 function createProgressBar(total, soFar, height, showPercentage = false) {
