@@ -110,17 +110,21 @@ const createWidget = async () => {
         header.font = new Font('MuseoModerno', 22)
         header.textColor = logo
 
-        if (showNumber || showLabel) {
+        if (showNumber || showLabel || showRenew) {
 
             if (showLabel) {
                 const value_number = list.addText(label)
                 value_number.font = Font.boldSystemFont(10)
                 value_number.textColor = textColor
-            } else {
+            } else if (showNumber) {
                 const value_number = list.addText(number.replace('Numero: ', '').replace(' ', '').replace(' ', ''))
                 value_number.font = Font.boldSystemFont(10)
                 value_number.textColor = textColor
-            }
+            } else {
+	    	const label_renew = list.addText('Rinnovo: ' + dateRenew)
+		label_renew.font = Font.boldSystemFont(10)
+		label_renew.textColor = textColor
+	    }
 
             list.addSpacer(20)
 
@@ -147,7 +151,7 @@ const createWidget = async () => {
         })
         rowGB.addSpacer()
         const value_gb_italy = rowGB.addText(consumati + ' su ' + totali + ' GB')
-        value_gb_italy.font = Font.boldSystemFont(16)
+        value_gb_italy.font = Font.boldSystemFont(14)
         value_gb_italy.textColor = textColor
 
         const progressBar = list.addImage(createProgressBar(totali, consumati, 5));
@@ -176,21 +180,15 @@ const createWidget = async () => {
             const rowCalls = list.addStack()
             const label_calls = rowCalls.addText('Minuti: ')
             label_calls.font = Font.boldSystemFont(10)
+	    label_calls.textColor = textColor
 	    rowCalls.addSpacer()
             const value_calls = rowCalls.addText(parseMinutes(calls) + ' su ∞')
             value_calls.font = Font.boldSystemFont(10)
+	    value_calls.textColor = textColor
 
-            const progressBarCalls = list.addImage(createProgressBar(100, minutes, 5));
+            const progressBarCalls = list.addImage(createProgressBar(100, 100, 5));
             progressBarCalls.imageSize = new Size(width, 15);
 
-        }
-
-        if (showRenew) {
-            list.addSpacer()
-            const label_renew = list.addText('Rinnovo: ' + dateRenew)
-            label_renew.font = Font.boldSystemFont(11)
-            label_renew.font = Font.italicSystemFont(11)
-            label_renew.textColor = textColor
         }
 
     } else {
