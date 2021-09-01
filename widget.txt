@@ -3,7 +3,6 @@
 //  Customized by Luca Zonarelli (github.com/lukezona)
 //  Set here your Iliad credentials
 //
-
 const USERNAME = '';
 const PASSWORD = '';
 
@@ -30,6 +29,7 @@ const showRenew = false
 const red = new Color('#c12026')
 const darkred = new Color('#ae0000')
 const dark = new Color('#212121')
+const grey = new Color('#d9d9d9')
 const black = new Color('#000000')
 const white = new Color('#ffffff')
 
@@ -41,30 +41,30 @@ let progressBg = darkred
 let progressFill = white
 
 switch (theme) {
-  case 'light': {
-    bgColor = white
-    textColor = red
-    logo = red
-    progressBg = dark
-    progressFill = red
-    break;
-  }
-  case 'dark': {
-    bgColor = dark
-    textColor = white
-    logo = white
-    progressBg = black
-    progressFill = red
-    break;
-  }
-  default: {
-    bgColor = red
-    textColor = white
-    logo = white
-    progressBg = darkred
-    progressFill = red
-    break;
-  }
+    case 'light': {
+        bgColor = white
+        textColor = red
+        logo = red
+        progressBg = grey
+        progressFill = red
+        break;
+    }
+    case 'dark': {
+        bgColor = dark
+        textColor = white
+        logo = white
+        progressBg = black
+        progressFill = red
+        break;
+    }
+    default: {
+        bgColor = red
+        textColor = white
+        logo = white
+        progressBg = darkred
+        progressFill = red
+        break;
+    }
 }
 
 const ILIAD_URL = 'https://www.iliad.it/account/consumi-e-credito';
@@ -76,113 +76,126 @@ function createProgressBar(total, soFar, height, showPercentage = false) {
     context.size = new Size(width, height);
     context.opaque = false;
     context.respectScreenScale = true;
-    
+
     // bar background
-    context.setFillColor(white);
+    context.setFillColor(progressBg);
     const bgPath = new Path();
     bgPath.addRoundedRect(new Rect(0, 0, width, height), height / 2, (height / 2) - 1);
     context.addPath(bgPath);
     context.fillPath();
-    
+
     // bar foreground
-    context.setFillColor(dark);
+    context.setFillColor(progressFill);
     const fgPath = new Path();
-    fgPath.addRoundedRect(new Rect(0, 0, (width * soFar)/total, height), height / 2, (height / 2) - 1);
+    fgPath.addRoundedRect(new Rect(0, 0, (width * soFar) / total, height), height / 2, (height / 2) - 1);
     context.addPath(fgPath);
     context.fillPath();
-    
+
     return context.getImage();
 }
 
+function parseUsage(usage) {
+    if (usage.match(/\d[b]/)) {
+        return 0
+    } else if (usage.match(/\d[MB]/)) {
+        return parseFloat(usage) / 1000
+    } else if (usage.match(/\d[GB]/)) {
+        return parseFloat(usage)
+    } else {
+        return "Error"
+    }
+}
+
 const createWidget = async () => {
-  
-	const result = await getIliadData()
 
-	const list = new ListWidget()
-	list.backgroundColor = bgColor
-	list.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000)
+    const result = await getIliadData()
 
-	if (result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)) {
-  
-	      const number = result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)[0];
-	      const dateRenew = result.match(/[0-9]{2}\/[0-9]{2}\/[0-9]{4}/)[0];
-	      const calls = result.match(/Chiamate: [0-9]*[a-z]*.+s/)[0];
-	      const messages = result.match(/[0-9]{1,4} SMS/)[0];
-	      const gb_italy = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]+GB/)[0]
-	      const gb_eu = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]GB/)[0]
+    const list = new ListWidget()
+    list.backgroundColor = bgColor
+    list.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000)
 
-	      const header = list.addText('iliad')
-	      header.font = new Font('MuseoModerno', 22)
-	      header.textColor = logo
+    if (result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)) {
 
-	      if (showNumber || showLabel) {
+        const number = result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)[0];
+        const dateRenew = result.match(/[0-9]{2}\/[0-9]{2}\/[0-9]{4}/)[0];
+        const calls = result.match(/Chiamate: [0-9]*[a-z]*.+s/)[0];
+        const messages = result.match(/[0-9]{1,4} SMS/)[0];
+        const gb_italy = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]+GB/)[0]
+        const gb_eu = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]GB/)[0]
 
-		if (showLabel) {
-		  const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
-		  value_number.font = Font.boldSystemFont(10)
-		  value_number.textColor = textColor
-		} else {
-		  const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
-		  value_number.font = Font.boldSystemFont(10)
-		  value_number.textColor = textColor
-		}
+        const consumati = parseUsage(gb_italy.split(' / ')[0])
+        const totali = parseUsage(gb_italy.split(' / ')[1])
 
-	      }
+        const consumatiEU = parseUsage(gb_eu.split(' / ')[0])
+        const totaliEU = parseUsage(gb_eu.split(' / ')[1])
 
-	      list.addSpacer()
+        const header = list.addText('iliad')
+        header.font = new Font('MuseoModerno', 22)
+        header.textColor = logo
 
-	      const consumati = parseFloat(gb_italy.split(' / ')[0])
-	      const totali = parseFloat(gb_italy.split(' / ')[1])
+        if (showNumber || showLabel) {
 
-	      const value_gb_italy = list.addText('Italia:  ' + gb_italy.replace(/,[0-9]*/,''))
-	      value_gb_italy.font = Font.boldSystemFont(12)
-	      value_gb_italy.textColor = textColor
+            if (showLabel) {
+                const value_number = list.addText(label)
+                value_number.font = Font.boldSystemFont(10)
+                value_number.textColor = textColor
+            } else {
+                const value_number = list.addText(number.replace('Numero: ', '').replace(' ', '').replace(' ', ''))
+                value_number.font = Font.boldSystemFont(10)
+                value_number.textColor = textColor
+            }
 
-	      const progressBar = list.addImage(createProgressBar(totali, consumati, 5));
-	      progressBar.imageSize = new Size(width, 20);
+        }
 
-	      list.addSpacer(3)
+        list.addSpacer(10)
 
-	      const consumatiEU = parseFloat(gb_eu.split(' / ')[0])
-	      const totaliEU = parseFloat(gb_eu.split(' / ')[1])
+        const value_gb_italy = list.addText('Italia:  ' + consumati + ' su ' + totali + ' GB')
+        value_gb_italy.font = Font.boldSystemFont(12)
+        value_gb_italy.textColor = textColor
 
-	      const value_gb_eu = list.addText('Europa:  ' + gb_eu.replace(/,[0-9]*/,''))
-	      value_gb_eu.font = Font.boldSystemFont(12)
-	      value_gb_eu.textColor = textColor
+        const progressBar = list.addImage(createProgressBar(totali, consumati, 5));
+        progressBar.imageSize = new Size(width, 20);
 
-	      const progressBarEU = list.addImage(createProgressBar(totali, consumati, 5));
-	      progressBarEU.imageSize = new Size(width, 20);
+        if (consumatiEU > 0) {
+            list.addSpacer(5)
 
-	      list.addSpacer()
+            const value_gb_eu = list.addText('Europa:  ' + consumatiEU + ' su ' + totaliEU + ' GB')
+            value_gb_eu.font = Font.boldSystemFont(12)
+            value_gb_eu.textColor = textColor
 
-	      if (showRenew) {
-		const label_renew = list.addText('Rinnovo: ' + dateRenew)
-		label_renew.font = Font.boldSystemFont(11)
-		label_renew.font = Font.italicSystemFont(11)
-		label_renew.textColor = textColor
-	      }
+            const progressBarEU = list.addImage(createProgressBar(totali, consumati, 5));
+            progressBarEU.imageSize = new Size(width, 20);
+        }
 
-	} else {
-		list.addText('Data not available')
-	}
+        if (showRenew) {
+            list.addSpacer()
+            const label_renew = list.addText('Rinnovo: ' + dateRenew)
+            label_renew.font = Font.boldSystemFont(11)
+            label_renew.font = Font.italicSystemFont(11)
+            label_renew.textColor = textColor
+        }
 
-	return list
+    } else {
+        list.addText('Data not available')
+    }
+
+    return list
 }
 
 const getIliadData = async () => {
 
-	const r = new Request(ILIAD_URL)
-	r.addParameterToMultipart('login-ident',USERNAME)
-	r.addParameterToMultipart('login-pwd',PASSWORD)
-	r.method = 'post'
+    const r = new Request(ILIAD_URL)
+    r.addParameterToMultipart('login-ident', USERNAME)
+    r.addParameterToMultipart('login-pwd', PASSWORD)
+    r.method = 'post'
 
-	try {
-		let result = await r.loadString()
-    		result = result.replace(/(<([^>]+)>)/gi, "");
-		return String(result)
-	} catch (err) {
-		return undefined
-	}
+    try {
+        let result = await r.loadString()
+        result = result.replace(/(<([^>]+)>)/gi, "");
+        return String(result)
+    } catch (err) {
+        return undefined
+    }
 }
 
 const widget = await createWidget()
