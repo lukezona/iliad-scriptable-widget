@@ -1,14 +1,21 @@
 //
-//  Iliad data usage widget - filippo.im
+//  Iliad data usage widget
+//  Based upon existing widget by filippo.im
 //  Customized by Luca Zonarelli (github.com/lukezona)
+//
 //  Set here your Iliad credentials
 //
 const USERNAME = '';
 const PASSWORD = '';
 
+//
 //  Styling options
+//
 
-// Theme: default (red background, white text); light (white background, red text); dark (dark background, white text)
+// Theme: 
+//  - default (red background, white text)
+//  - light (white background, red text)
+//  - dark (dark background, white text)
 const theme = "default"
 
 // Show your phone number (useful for dual SIM usage)
@@ -21,8 +28,14 @@ const label = ""
 // Show renew date
 const showRenew = false
 
+// Show minutes
+const showMinutes = false
+
+// Show SMS
+const showSMS = false
+
 //
-//  Don't modify after here
+//  DON'T MODIFY FROM HERE
 //
 
 // Styles
@@ -71,41 +84,6 @@ const ILIAD_URL = 'https://www.iliad.it/account/consumi-e-credito';
 
 const width = 120;
 
-function createProgressBar(total, soFar, height, showPercentage = false) {
-    const context = new DrawContext();
-    context.size = new Size(width, height);
-    context.opaque = false;
-    context.respectScreenScale = true;
-
-    // bar background
-    context.setFillColor(progressBg);
-    const bgPath = new Path();
-    bgPath.addRoundedRect(new Rect(0, 0, width, height), height / 2, (height / 2) - 1);
-    context.addPath(bgPath);
-    context.fillPath();
-
-    // bar foreground
-    context.setFillColor(progressFill);
-    const fgPath = new Path();
-    fgPath.addRoundedRect(new Rect(0, 0, (width * soFar) / total, height), height / 2, (height / 2) - 1);
-    context.addPath(fgPath);
-    context.fillPath();
-
-    return context.getImage();
-}
-
-function parseUsage(usage) {
-    if (usage.match(/\d[b]/)) {
-        return 0
-    } else if (usage.match(/\d[MB]/)) {
-        return parseFloat(usage) / 1000
-    } else if (usage.match(/\d[GB]/)) {
-        return parseFloat(usage)
-    } else {
-        return "Error"
-    }
-}
-
 const createWidget = async () => {
 
     const result = await getIliadData()
@@ -149,24 +127,30 @@ const createWidget = async () => {
         
         list.addSpacer(10)
 
-        const value_calls = list.addText('Minuti  ' + calls.replace('Chiamate: ','') + ' su Illimitati')
+	if (showMinutes) {
+		const value_calls = list.addText('Minuti  ' + calls.replace('Chiamate: ','') + ' su Illimitati')
 		value_calls.font = Font.boldSystemFont(12)
 
-        const progressBarCalls = list.addImage(createProgressBar(100, 0, 5));
-        progressBarCalls.imageSize = new Size(width, 20);
+		const progressBarCalls = list.addImage(createProgressBar(100, 0, 5));
+		progressBarCalls.imageSize = new Size(width, 20);
 
-        list.addSpacer(5)
+		list.addSpacer(5)
+	}
+        
+	if (showMessages) {
+		const value_messages = list.addText('Messaggi: ' + messages + ' su Illimitati')
+		value_messages.font = Font.boldSystemFont(12)
 
-        const value_messages = list.addText('Messaggi: ' + messages + ' su Illimitati')
-    	value_messages.font = Font.boldSystemFont(12)
+		const progressBarMessages = list.addImage(createProgressBar(100, 0, 5));
+		progressBarMessages.imageSize = new Size(width, 20);
 
-        const progressBarMessages = list.addImage(createProgressBar(100, 0, 5));
-        progressBarMessages.imageSize = new Size(width, 20);
+		list.addSpacer(5)
+	}
 
-        list.addSpacer(5)
-
-        const value_gb_italy = list.addText('Italia:  ' + consumati + ' su ' + totali + ' GB')
-        value_gb_italy.font = Font.boldSystemFont(12)
+	const rowGB = list.addStack()
+	rowGB.addImage(SFSymbol.named("arrow.up.arrow.down").image)
+        const value_gb_italy = rowGB.addText(consumati + ' su ' + totali + ' GB')
+        value_gb_italy.font = Font.boldSystemFont(32)
         value_gb_italy.textColor = textColor
 
         const progressBar = list.addImage(createProgressBar(totali, consumati, 5));
@@ -221,3 +205,54 @@ if (!config.runsInWidget) await widget.presentSmall()
 
 Script.setWidget(widget)
 Script.complete()
+
+//
+// Functions here
+// 
+
+function addSymbol({
+  symbol = 'applelogo',
+  stack,
+  color = Color.white(),
+  size = 20,
+}) {
+  const _sym = SFSymbol.named(symbol)
+  const wImg = stack.addImage(_sym.image)
+  wImg.tintColor = color
+  wImg.imageSize = new Size(size, size)
+}
+
+function createProgressBar(total, soFar, height, showPercentage = false) {
+    const context = new DrawContext();
+    context.size = new Size(width, height);
+    context.opaque = false;
+    context.respectScreenScale = true;
+
+    // bar background
+    context.setFillColor(progressBg);
+    const bgPath = new Path();
+    bgPath.addRoundedRect(new Rect(0, 0, width, height), height / 2, (height / 2) - 1);
+    context.addPath(bgPath);
+    context.fillPath();
+
+    // bar foreground
+    context.setFillColor(progressFill);
+    const fgPath = new Path();
+    fgPath.addRoundedRect(new Rect(0, 0, (width * soFar) / total, height), height / 2, (height / 2) - 1);
+    context.addPath(fgPath);
+    context.fillPath();
+
+    return context.getImage();
+}
+
+function parseUsage(usage) {
+    if (usage.match(/\d[b]/)) {
+        return 0
+    } else if (usage.match(/\d[MB]/)) {
+        return parseFloat(usage) / 1000
+    } else if (usage.match(/\d[GB]/)) {
+        return parseFloat(usage)
+    } else {
+        return "Error"
+    }
+}
