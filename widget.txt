@@ -153,7 +153,7 @@ const createWidget = async () => {
 		value_calls.font = Font.boldSystemFont(12)
 
         const progressBarCalls = list.addImage(createProgressBar(100, 0, 5));
-        progressBar.imageSize = new Size(width, 20);
+        progressBarCalls.imageSize = new Size(width, 20);
 
         list.addSpacer(5)
 
@@ -161,7 +161,7 @@ const createWidget = async () => {
     	value_messages.font = Font.boldSystemFont(12)
 
         const progressBarMessages = list.addImage(createProgressBar(100, 0, 5));
-        progressBar.imageSize = new Size(width, 20);
+        progressBarMessages.imageSize = new Size(width, 20);
 
         list.addSpacer(5)
 
