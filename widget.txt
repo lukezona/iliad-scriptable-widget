@@ -4,8 +4,8 @@
 //  Set here your Iliad credentials
 //
 
-const USERNAME = '<USERNAME>';
-const PASSWORD = '<PASSWORD>';
+const USERNAME = '';
+const PASSWORD = '';
 
 //  Styling options
 
@@ -31,29 +31,34 @@ const red = new Color('#c12026')
 const dark = new Color('#212121')
 const white = new Color('#ffffff')
 
-const bgColor, textColor
+let bgColor = red
+let textColor = white
+let logo = white
 
 switch (theme) {
   case 'light': {
     bgColor = white
     textColor = red
+    logo = red
     break;
   }
   case 'dark': {
     bgColor = dark
     textColor = white
+    logo = white
     break;
   }
   default: {
     bgColor = red
     textColor = white
+    logo = white
     break;
   }
 }
 
 const ILIAD_URL = 'https://www.iliad.it/account/consumi-e-credito';
 
-const width = 320;
+const width = 120;
 
 function createProgressBar(total, soFar, height, showPercentage = false) {
     const context = new DrawContext();
@@ -62,14 +67,14 @@ function createProgressBar(total, soFar, height, showPercentage = false) {
     context.respectScreenScale = true;
     
     // bar background
-    context.setFillColor(bgColor);
+    context.setFillColor(white);
     const bgPath = new Path();
     bgPath.addRoundedRect(new Rect(0, 0, width, height), height / 2, (height / 2) - 1);
     context.addPath(bgPath);
     context.fillPath();
     
     // bar foreground
-    context.setFillColor(textColor);
+    context.setFillColor(dark);
     const fgPath = new Path();
     fgPath.addRoundedRect(new Rect(0, 0, (width * soFar)/total, height), height / 2, (height / 2) - 1);
     context.addPath(fgPath);
@@ -96,8 +101,8 @@ const createWidget = async () => {
       const gb_eu = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]GB/)[0]
       
       const header = list.addText('iliad')
-      header.font = new Font('MuseoModerno', 18)
-      header.textColor = red
+      header.font = new Font('MuseoModerno', 22)
+      header.textColor = logo
       
       if (showNumber || showLabel) {
         
@@ -131,7 +136,7 @@ const createWidget = async () => {
       const totaliEU = parseFloat(gb_eu.split(' / ')[1])
 
       const progressBarEU = list.addImage(createProgressBar(totali, consumati, 20));
-      progressBar.imageSize = new Size(width, 20);
+      progressBarEU.imageSize = new Size(width, 20);
       
       const value_gb_eu = list.addText('🇪🇺  ' + gb_eu.replace(/,[0-9]*/,''))
 		  value_gb_eu.font = Font.boldSystemFont(12)
