@@ -1,1 +1,175 @@
+//
+//  Iliad data usage widget - filippo.im
+//  Customized by Luca Zonarelli (github.com/lukezona)
+//  Set here your Iliad credentials
+//
 
+const USERNAME = '<USERNAME>';
+const PASSWORD = '<PASSWORD>';
+
+//  Styling options
+
+// Theme: default (red background, white text); light (white background, red text); dark (dark background, white text)
+const theme = "default"
+
+// Show your phone number (useful for dual SIM usage)
+const showNumber = false
+
+// Show a custom label to identify the SIM (if true will override the phone number to false)
+const showLabel = false
+const label = ""
+
+// Show renew date
+const showRenew = false
+
+//
+//  Don't modify after here
+//
+
+// Styles
+const red = new Color('#c12026')
+const dark = new Color('#212121')
+const white = new Color('#ffffff')
+
+const bgColor, textColor
+
+switch (theme) {
+  case 'light': {
+    bgColor = white
+    textColor = red
+    break;
+  }
+  case 'dark': {
+    bgColor = dark
+    textColor = white
+    break;
+  }
+  default: {
+    bgColor = red
+    textColor = white
+    break;
+  }
+}
+
+const ILIAD_URL = 'https://www.iliad.it/account/consumi-e-credito';
+
+const width = 320;
+
+function createProgressBar(total, soFar, height, showPercentage = false) {
+    const context = new DrawContext();
+    context.size = new Size(width, height);
+    context.opaque = false;
+    context.respectScreenScale = true;
+    
+    // bar background
+    context.setFillColor(bgColor);
+    const bgPath = new Path();
+    bgPath.addRoundedRect(new Rect(0, 0, width, height), height / 2, (height / 2) - 1);
+    context.addPath(bgPath);
+    context.fillPath();
+    
+    // bar foreground
+    context.setFillColor(textColor);
+    const fgPath = new Path();
+    fgPath.addRoundedRect(new Rect(0, 0, (width * soFar)/total, height), height / 2, (height / 2) - 1);
+    context.addPath(fgPath);
+    context.fillPath();
+    
+    return context.getImage();
+}
+
+const createWidget = async () => {
+  
+	const result = await getIliadData()
+
+	const list = new ListWidget()
+	list.backgroundColor = bgColor
+	list.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000)
+
+	if (result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)) {
+  
+      const number = result.match(/Numero: [0-9]*.[0-9]*.[0-9]*/)[0];
+      const dateRenew = result.match(/[0-9]{2}\/[0-9]{2}\/[0-9]{4}/)[0];
+      const calls = result.match(/Chiamate: [0-9]*[a-z]*.+s/)[0];
+      const messages = result.match(/[0-9]{1,4} SMS/)[0];
+      const gb_italy = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]+GB/)[0]
+      const gb_eu = result.match(/[0-9]*,*[0-9]*[a-zA-Z]* \/ [0-9]GB/)[0]
+      
+      const header = list.addText('iliad')
+      header.font = new Font('MuseoModerno', 18)
+      header.textColor = red
+      
+      if (showNumber || showLabel) {
+        
+        if (showLabel) {
+          const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
+          value_number.font = Font.boldSystemFont(10)
+          value_number.textColor = textColor
+        } else {
+          const value_number = list.addText(number.replace('Numero: ','').replace(' ','').replace(' ',''))
+          value_number.font = Font.boldSystemFont(10)
+          value_number.textColor = textColor
+        }
+      
+      }
+
+      list.addSpacer()
+      
+      const consumati = parseFloat(gb_italy.split(' / ')[0])
+      const totali = parseFloat(gb_italy.split(' / ')[1])
+      
+      const progressBar = list.addImage(createProgressBar(totali, consumati, 20));
+      progressBar.imageSize = new Size(width, 20);
+
+      const value_gb_italy = list.addText('🇮🇹  ' + gb_italy.replace(/,[0-9]*/,''))
+		  value_gb_italy.font = Font.boldSystemFont(12)
+      value_gb_italy.textColor = textColor
+
+      list.addSpacer(3)
+      
+      const consumatiEU = parseFloat(gb_eu.split(' / ')[0])
+      const totaliEU = parseFloat(gb_eu.split(' / ')[1])
+
+      const progressBarEU = list.addImage(createProgressBar(totali, consumati, 20));
+      progressBar.imageSize = new Size(width, 20);
+      
+      const value_gb_eu = list.addText('🇪🇺  ' + gb_eu.replace(/,[0-9]*/,''))
+		  value_gb_eu.font = Font.boldSystemFont(12)
+      value_gb_eu.textColor = textColor
+      list.addSpacer()
+      
+      if (showRenew) {
+        const label_renew = list.addText('Rinnovo: ' + dateRenew)
+        label_renew.font = Font.boldSystemFont(11)
+        label_renew.font = Font.italicSystemFont(11)
+        label_renew.textColor = textColor
+      }
+
+	} else {
+		list.addText('Data not available')
+	}
+
+	return list
+}
+
+const getIliadData = async () => {
+
+	const r = new Request(ILIAD_URL)
+  r.addParameterToMultipart('login-ident',USERNAME)
+  r.addParameterToMultipart('login-pwd',PASSWORD)
+	r.method = 'post'
+
+	try {
+		let result = await r.loadString()
+    result = result.replace(/(<([^>]+)>)/gi, "");
+		return String(result)
+	} catch (err) {
+		return undefined
+	}
+}
+
+const widget = await createWidget()
+if (!config.runsInWidget) await widget.presentSmall()
+
+Script.setWidget(widget)
+Script.complete()
