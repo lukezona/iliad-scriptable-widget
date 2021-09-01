@@ -53,7 +53,7 @@ let progressFill = white
 switch (theme) {
     case 'light': {
         bgColor = white
-        textColor = red
+        textColor = dark
         logo = red
         progressBg = grey
         progressFill = red
@@ -126,7 +126,7 @@ const createWidget = async () => {
 		label_renew.textColor = textColor
 	    }
 
-            list.addSpacer(20)
+            list.addSpacer(15)
 
         } else {
             list.addSpacer(20)
