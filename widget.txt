@@ -28,11 +28,8 @@ const label = ""
 // Show renew date
 const showRenew = false
 
-// Show minutes
-const showMinutes = false
-
-// Show SMS
-const showSMS = false
+// Show messages
+const showMessages = false
 
 //
 //  DON'T MODIFY FROM HERE
@@ -126,16 +123,6 @@ const createWidget = async () => {
         }
         
         list.addSpacer(10)
-
-	if (showMinutes) {
-		const value_calls = list.addText('Minuti  ' + calls.replace('Chiamate: ','') + ' su Illimitati')
-		value_calls.font = Font.boldSystemFont(12)
-
-		const progressBarCalls = list.addImage(createProgressBar(100, 0, 5));
-		progressBarCalls.imageSize = new Size(width, 20);
-
-		list.addSpacer(5)
-	}
         
 	if (showMessages) {
 		const value_messages = list.addText('Messaggi: ' + messages + ' su Illimitati')
@@ -148,15 +135,22 @@ const createWidget = async () => {
 	}
 
 	const rowGB = list.addStack()
-	rowGB.addImage(SFSymbol.named("arrow.up.arrow.down").image)
+	addSymbol({
+		symbol: 'arrow.up.arrow.down.circle',
+		stack: rowGB,
+		color: textColor,
+		size: 20
+	})
+	rowGB.addSpacer(10)
         const value_gb_italy = rowGB.addText(consumati + ' su ' + totali + ' GB')
-        value_gb_italy.font = Font.boldSystemFont(32)
+        value_gb_italy.font = Font.boldSystemFont(24)
         value_gb_italy.textColor = textColor
 
         const progressBar = list.addImage(createProgressBar(totali, consumati, 5));
         progressBar.imageSize = new Size(width, 20);
 
         if (consumatiEU > 0) {
+	
             list.addSpacer(5)
 
             const value_gb_eu = list.addText('Europa:  ' + consumatiEU + ' su ' + totaliEU + ' GB')
@@ -165,8 +159,24 @@ const createWidget = async () => {
 
             const progressBarEU = list.addImage(createProgressBar(totali, consumati, 5));
             progressBarEU.imageSize = new Size(width, 20);
+	    
         } else {
-            list.addSpacer(0)
+
+		list.addSpacer(5)
+		
+		const rowCalls = list.addStack()
+		addSymbol({
+			symbol: 'phone.circle',
+			stack: rowCalls,
+			color: textColor,
+			size: 15
+		})
+		const value_calls = rowCalls.addText(parseMinutes(calls) + ' minuti')
+		value_calls.font = Font.boldSystemFont(12)
+
+		const progressBarCalls = list.addImage(createProgressBar(100, 0, 5));
+		progressBarCalls.imageSize = new Size(width, 20);
+
         }
 
         if (showRenew) {
@@ -252,6 +262,18 @@ function parseUsage(usage) {
         return parseFloat(usage) / 1000
     } else if (usage.match(/\d[GB]/)) {
         return parseFloat(usage)
+    } else {
+        return "Error"
+    }
+}
+
+function parseMinutes(calls) {
+    if (calls.match(/\d[s]/)) {
+        return 0
+    } else if (calls.match(/\d[m]/)) {
+        return parseFloat(calls)
+    } else if (calls.match(/\d[o]/)) {
+        return parseFloat(calls) * 60
     } else {
         return "Error"
     }
