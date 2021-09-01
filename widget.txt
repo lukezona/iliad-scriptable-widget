@@ -146,8 +146,24 @@ const createWidget = async () => {
             }
 
         }
-
+        
         list.addSpacer(10)
+
+        const value_calls = list.addText('Minuti  ' + calls.replace('Chiamate: ','') + ' su Illimitati')
+		value_calls.font = Font.boldSystemFont(12)
+
+        const progressBarCalls = list.addImage(createProgressBar(100, 0, 5));
+        progressBar.imageSize = new Size(width, 20);
+
+        list.addSpacer(5)
+
+        const value_messages = list.addText('Messaggi: ' + messages + ' su Illimitati')
+    	value_messages.font = Font.boldSystemFont(12)
+
+        const progressBarMessages = list.addImage(createProgressBar(100, 0, 5));
+        progressBar.imageSize = new Size(width, 20);
+
+        list.addSpacer(5)
 
         const value_gb_italy = list.addText('Italia:  ' + consumati + ' su ' + totali + ' GB')
         value_gb_italy.font = Font.boldSystemFont(12)
@@ -165,6 +181,8 @@ const createWidget = async () => {
 
             const progressBarEU = list.addImage(createProgressBar(totali, consumati, 5));
             progressBarEU.imageSize = new Size(width, 20);
+        } else {
+            list.addSpacer(0)
         }
 
         if (showRenew) {
