@@ -262,10 +262,10 @@ function createProgressBar(total, soFar, height, showPercentage = false) {
 function parseUsage(usage) {
     if (usage.match(/\d[b]/)) {
         return 0
-    } else if (usage.match(/\d[MB]/)) {
-        return parseFloat(usage) / 1000
+    } else if (usage.match(/\d[mb]/)) {
+        return parseFloat((parseFloat(usage) / 1000).toFixed(1))
     } else if (usage.match(/\d[GB]/)) {
-        return parseFloat(usage)
+        return parseFloat(usage.toFixed(1))
     } else {
         return "Error"
     }
