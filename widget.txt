@@ -260,12 +260,16 @@ function createProgressBar(total, soFar, height, showPercentage = false) {
 }
 
 function parseUsage(usage) {
+    let u = parseFloat(usage)
     if (usage.match(/\d[b]/)) {
         return 0
     } else if (usage.match(/\d[mb]/)) {
-        return parseFloat((parseFloat(usage) / 1000).toFixed(1))
+    	u = u / 1000
+    	u < 100 ? u = parseFloat(u.toFixed(1)) : u = parseFloat(u.toFixed(0))
+        return u
     } else if (usage.match(/\d[GB]/)) {
-        return parseFloat(usage.toFixed(1))
+    	u < 100 ? u = parseFloat(u.toFixed(1)) : u = parseFloat(u.toFixed(0))
+        return u
     } else {
         return "Error"
     }
